@@ -3,6 +3,7 @@
 /**
  *
  */
+//session_start();
 class Pendaftaran extends CI_Controller
 {
   function __construct()
@@ -11,10 +12,18 @@ class Pendaftaran extends CI_Controller
     $this->load->model('back-end/pendaftaran/M_dashboard');
     $this->load->model('back-end/pendaftaran/M_pengaturan');
     $this->load->library('layout_pendaftaran');
+    if ($this->session->userdata('username')=="") {
+        redirect('admin/Login/loginhalaman');
+    }
+    if ($this->session->userdata('kode_role') == 'akd') {
+          redirect('admin/Datamaster');
+    }
+    $this->load->helper('text');
   }
 
   function index()
   {
+      $variabel['username'] = $this->session->userdata('username');
       $variabel['total_tidak_lengkap'] = $this->M_dashboard->get_count_status_tidak_lengkap();
       $variabel['total_diverifikasi'] = $this->M_dashboard->get_count_status_diverifikasi();
       $variabel['total_menunggu'] = $this->M_dashboard->get_count_status_menunggu();
@@ -42,5 +51,12 @@ class Pendaftaran extends CI_Controller
         </div>
     ");
     redirect('admin/pendaftaran/pengaturan');
+  }
+
+  function logout() {
+    $this->session->unset_userdata('username');
+    $this->session->unset_userdata('kode_role');
+    session_destroy();
+    redirect('admin/login/loginhalaman');
   }
 }

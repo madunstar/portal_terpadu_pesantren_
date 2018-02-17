@@ -149,7 +149,7 @@
                     </ul>
                   </li>
 
-									<li class="<?= (($menu == "datamaster") && ($submenu == 'provinsi')) ? "active" : ""; ?>">
+									<li >
                     <a href="#" class="auto">
                       <span class="pull-right text-muted">
                         <i class="i i-circle-sm-o text"></i>
@@ -168,17 +168,16 @@
                           <span>Data Admin</span>
                         </a>
                       </li>
-                      <li >
-                        <a href="fullcalendar.html" class="auto">
+                      <li class="<?= (($menu == "datamaster") &&  ($submenu == 'pendidikan')) ? "active" : ""; ?>">
+                        <a href="<?php echo base_url() ?>admin/datamaster/pendidikan" class="auto">
                           <i class="i i-dot"></i>
 
                           <span>Data Pendidikan</span>
                         </a>
                       </li>
-                      <li >
-                        <a href="project.html" class="auto">
+                      <li class="<?= (($menu == "datamaster") &&  ($submenu == 'pekerjaan')) ? "active" : ""; ?>">
+                        <a href="<?php echo base_url() ?>admin/datamaster/pekerjaan" class="auto">
                           <i class="i i-dot"></i>
-
                           <span>Data Pekerjaan</span>
                         </a>
                       </li>
@@ -230,9 +229,11 @@
           </section>
 
           <footer class="footer hidden-xs no-padder text-center-nav-xs">
-            <a href="modal.lockme.html" data-toggle="ajaxModal" class="btn btn-icon icon-muted btn-inactive pull-right m-l-xs m-r-xs hidden-nav-xs">
-              <i class="i i-logout"></i>
-            </a>
+            <!--<a href="modal.lockme.html" data-toggle="ajaxModal" class="btn btn-icon icon-muted btn-inactive pull-right m-l-xs m-r-xs hidden-nav-xs">-->
+              <a href="<?php echo base_url() ?>admin/datamaster/logout" class="auto btn btn-icon icon-muted btn-inactive pull-right m-l-xs m-r-xs hidden-nav-xs">
+                <i class="i i-logout"></i>
+              </a>
+            <!--</a>-->
             <a href="#nav" data-toggle="class:nav-xs" class="btn btn-icon icon-muted btn-inactive m-l-xs m-r-xs">
               <i class="i i-circleleft text"></i>
               <i class="i i-circleright text-active"></i>

@@ -22,5 +22,31 @@ class M_pengaturan extends CI_Model
         return $this->db->update('tb_pengaturan_pendaftaran',$params);
     }
 
+    function datatahun()
+    {
+      return $this->db->get('tb_tahun_ajaran');
+    }
+
+//reset akun pendaftar
+    function get_akun_pendaftar()
+    {
+      $this->db->select('*');
+      $this->db->from('tb_akun_pendaftar');
+      $this->db->join('tb_biodata_pendaftar', 'tb_akun_pendaftar.email_pendaftar = tb_biodata_pendaftar.email_pendaftar');
+      $this->db->join('tb_tahun_ajaran','tb_akun_pendaftar.tahun_ajaran = tb_tahun_ajaran.id_tahun');
+      return $this->db->get();
+    }
+
+    function editsandi($email_akun,$array)
+    {
+        $this->db->where("email_pendaftar",$email_akun);
+        return $this->db->update('tb_akun_pendaftar',$array);
+    }
+
+    function untukmodal($email_pendaftar)
+    {
+
+      return $this->db->get('tb_akun_pendaftar');
+    }
 }
 ?>

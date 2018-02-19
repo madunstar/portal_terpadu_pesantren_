@@ -14,40 +14,31 @@
                 <div class="text-muted text-sm hidden-nav-xs padder m-t-sm m-b-sm">Menu</div>
                 <ul class="nav nav-main" data-ride="collapse">
                   <li  class="<?= (($menu == "pendaftaran") && ($submenu == 'dashboard')) ? "active" : ""; ?>">
-                    <a href="<?php echo base_url() ?>admin/datamaster/" class="auto">
+                    <a href="<?php echo base_url() ?>santri/pendaftaran/dashboard" class="auto">
                       <i class="fa fa-dashboard">
                       </i>
                       <span class="font-bold">Dashboard</span>
                     </a>
                   </li>
                   <li class="<?= (($menu == "pendaftaran") && ($submenu == 'biodata'))  ? "active" : ""; ?>">
-                    <a href="#" class="auto">
-                      <span class="pull-right text-muted">
-                        <i class="i i-circle-sm-o text"></i>
-                        <i class="i i-circle-sm text-active"></i>
-                      </span>
-
+                    <a href="<?php echo base_url() ?>santri/pendaftaran/biodata" class="auto">
                       <i class="fa fa-user">
                       </i>
                       <span class="font-bold">Biodata</span>
                     </a>
                   </li>
                   <li >
-                    <a href="#" class="auto">
+                    <a href="<?php echo base_url() ?>santri/pendaftaran/berkas" class="auto">
                       <span class="pull-right text-muted">
-                        <i class="i i-circle-sm-o text"></i>
-                        <i class="i i-circle-sm text-active"></i>
                       </span>
                       <i class="fa fa-folder-open">
                       </i>
                       <span class="font-bold">Berkas</span>
                     </a>
                   </li>
-                  <li >
-                    <a href="#" class="auto">
+                  <li class="<?= (($menu == "pendaftaran") && ($submenu == 'pembayaran'))  ? "active" : ""; ?>">
+                    <a href="<?php echo base_url() ?>santri/pendaftaran/pembayaran" class="auto">
                       <span class="pull-right text-muted">
-                        <i class="i i-circle-sm-o text"></i>
-                        <i class="i i-circle-sm text-active"></i>
                       </span>
                       <i class="fa fa-money">
                       </i>
@@ -55,8 +46,8 @@
                     </a>
 
                   </li>
-                  <li >
-                    <a href="#" class="auto">
+                  <li class="<?= (($menu == "pendaftaran") && ($submenu == 'pengumuman'))  ? "active" : ""; ?>" >
+                    <a href="<?php echo base_url() ?>santri/pendaftaran/pengumuman" class="auto">
                       <span class="pull-right text-muted">
                         <i class="i i-circle-sm-o text"></i>
                         <i class="i i-circle-sm text-active"></i>

@@ -9,6 +9,7 @@ class Datamaster extends CI_Controller{
     function __construct(){
         parent::__construct();
         $this->load->library(array('form_validation','session'));
+        $this->load->model('back-end/datamaster/m_admin');
         $this->load->model('back-end/datamaster/m_santri');
         $this->load->model('back-end/datamaster/m_guru');
         $this->load->model('back-end/datamaster/m_staff');
@@ -18,11 +19,13 @@ class Datamaster extends CI_Controller{
         $this->load->model('back-end/datamaster/m_alat_transportasi');
         $this->load->model('back-end/datamaster/m_kota_kab');
         $this->load->model('back-end/datamaster/m_kecamatan');
+        $this->load->model('back-end/datamaster/m_kel_desa');
+        $this->load->model('back-end/datamaster/m_tahun_ajaran');
         $this->load->library('layout');
         if ($this->session->userdata('username')=="") {
         	redirect('admin/Login/loginhalaman');
 	    }
-	    if ($this->session->userdata('kode_role') == 'adm_pd') {
+	    if ($this->session->userdata('kode_role_admin') == 'adm_pd') {
       		redirect('admin/Pendaftaran');
 		}
 	    $this->load->helper('text');
@@ -36,10 +39,92 @@ class Datamaster extends CI_Controller{
 
     function logout(){
 		$this->session->unset_userdata('username');
-		$this->session->unset_userdata('kode_role');
+		$this->session->unset_userdata('kode_role_admin');
 		session_destroy();
 		redirect('admin/login/loginhalaman');
 	}
+
+    // CRUD Admin
+    function admin(){
+       $variabel['data'] = $this->m_admin->lihatdata();
+       $this->layout->render('back-end/datamaster/admin/v_admin',$variabel,'back-end/datamaster/admin/v_admin_js');
+    }
+
+    function admintambah(){
+        /*$this->form_validation->set_rules('username','Username','trim|required');
+        $this->form_validation->set_rules('password','Password','trim|required|min_length[4]|max_length[16]');
+        $this->form_validation->set_rules('repassword','Masukkan Kembali Password','trim|required|matches[password]');
+        if ($this->form_validation->run()==FALSE){
+            $variabel ='';
+            $this->layout->render('back-end/datamaster/admin/v_admin_tambah',$variabel,'back-end/datamaster/admin/v_admin_js');*/
+        //}else if ($this->input->post()){
+        if ($this->input->post()){
+            $array=array(
+                'kode_role_admin'=> $this->input->post('kode_role_admin'),
+                'username'=> $this->input->post('username'),
+                'password'=> md5($this->input->post('password')),
+                );
+            $password = $this->input->post("password");
+            $repassword = $this->input->post("repassword");
+            if (($this->m_admin->cekdata($this->input->post('username'))==0) && ($password==$repassword)) {
+                $exec = $this->m_admin->tambahdata($array);
+                if ($exec) redirect(base_url("admin/datamaster/admintambah?msg=1"));
+                else redirect(base_url("admin/datamaster/admintambah?msg=0"));
+            } else if ($password!=$repassword) {
+                $variabel['kode_role_admin']=$this->m_admin->ambilroleadmin();
+                $variabel['repassword'] =$this->input->post("repassword");
+                $this->layout->render('back-end/datamaster/admin/v_admin_tambah',$variabel,'back-end/datamaster/admin/v_admin_js');
+            }
+            else {
+                $variabel['kode_role_admin']=$this->m_admin->ambilroleadmin();
+                $variabel['username'] =$this->input->post('username');
+                $this->layout->render('back-end/datamaster/admin/v_admin_tambah',$variabel,'back-end/datamaster/admin/v_admin_js');
+            }
+        } else {
+            //$variabel ='';
+            $variabel['kode_role_admin']=$this->m_admin->ambilroleadmin();
+            $this->layout->render('back-end/datamaster/admin/v_admin_tambah',$variabel,'back-end/datamaster/admin/v_admin_js');
+        }
+    }
+
+    function adminedit(){
+        if ($this->input->post()) {
+            $array=array(
+                'username'=> $this->input->post('username'),
+                'password'=> $this->input->post('password'),
+                //'kode_role_admin'=> $this->input->post('kode_role_admin'),
+                );
+            $usernamelama = $this->input->post("usernamelama");
+            $username = $this->input->post("username");
+            if (($this->m_admin->cekdata($username)>0) && ($usernamelama!=$username)) {
+                $variabel['username'] =$this->input->post('username');
+                $variabel['usernamelama'] =$this->input->post('usernamelama');
+                $variabel['data'] = $array;
+                $this->layout->render('back-end/datamaster/admin/v_admin_edit',$variabel,'back-end/datamaster/admin/v_admin_js');
+            } else {
+                $exec = $this->m_admin->editdata($id_usernamelama,$array);
+                if ($exec){
+                    redirect(base_url("admin/datamaster/adminedit?username=".$username."&msg=1"));
+                }
+            }
+        } else {
+            $username = $this->input->get("username");
+            $exec = $this->m_admin->lihatdatasatu($username);
+            if ($exec->num_rows()>0){
+                $variabel['data'] = $exec ->row_array();
+                $this->layout->render('back-end/datamaster/admin/v_admin_edit',$variabel,'back-end/datamaster/admin/v_admin_js');
+            } else {
+                redirect(base_url("admin/datamaster/admin"));
+            }
+        }
+    }
+
+    function adminhapus(){
+        $username = $this->input->get("username");
+        $exec = $this->m_admin->hapus($username);
+        redirect(base_url()."admin/datamaster/admin?msg=1");
+    }
+    // End CRUD Admin
 
     // CRUD Santri
     function santri(){
@@ -60,7 +145,31 @@ class Datamaster extends CI_Controller{
 
     }
 
-    function santritambah(){
+
+    function datakotakab2()
+    {
+      $id=$this->input->post('provinsi');
+      $data=$this->m_santri->datakotaajax($id);
+      echo json_encode($data);
+    }
+    
+    function datakecamatan2()
+    {
+      $id=$this->input->post('kecamatan');
+      $data=$this->m_santri->datakecamatanajax($id);
+      echo json_encode($data);
+    }
+    
+    function datadesa2()
+    {
+      $id=$this->input->post('desa');
+      $data=$this->m_santri->datadesaajax($id);
+      echo json_encode($data);
+    }
+
+
+    function santritambah()
+    {
         if ($this->input->post()){
 
                 $array=array(
@@ -112,12 +221,27 @@ class Datamaster extends CI_Controller{
                 if ($exec) redirect(base_url("admin/datamaster/santritambah?msg=1"));
                 else redirect(base_url("admin/datamaster/santritambah?msg=0"));
             } else {
+                $variabel['provinsi']=$this->m_santri->ambilprovinsi();
+                $variabel['kabupaten']=$this->m_santri->ambilkabupaten($this->input->post('provinsi'));
+                $variabel['kecamatan']=$this->m_santri->ambilkecamatan($this->input->post('kabupaten_kota'));
+                $variabel['desa']=$this->m_santri->ambildesa($this->input->post('kecamatan'));
+            $variabel['transportasi']=$this->m_santri->ambiltransportasi();
+             $variabel['pekerjaan']=$this->m_santri->ambilpekerjaan();
+             $variabel['pendidikan']=$this->m_santri->ambilpendidikan();
                 $variabel['nis_lokal'] =$this->input->post('nis_lokal');
                 $this->layout->render('back-end/datamaster/santri/v_santri_tambah',$variabel,'back-end/datamaster/santri/v_santri_js');
             }
 
         } else {
-            $variabel ='';
+            $variabel['provinsi']=$this->m_santri->ambilprovinsi();
+            $variabel['transportasi']=$this->m_santri->ambiltransportasi();
+             $variabel['pekerjaan']=$this->m_santri->ambilpekerjaan();
+             $variabel['pendidikan']
+             =$this->m_santri->ambilpendidikan();
+             $variabel['kabupaten']=$this->m_santri->ambilkabupaten("");
+             $variabel['kecamatan']=$this->m_santri->ambilkecamatan("");
+             $variabel['desa']=$this->m_santri->ambildesa("");
+
             $this->layout->render('back-end/datamaster/santri/v_santri_tambah',$variabel,'back-end/datamaster/santri/v_santri_js');
         }
     }
@@ -223,7 +347,7 @@ class Datamaster extends CI_Controller{
             $variabel['santri'] = $exec->row_array();
             if ($this->input->post()){
                 $config['upload_path'] = './assets/berkas/berkassantri';
-                $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+                $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
                 $this->load->library('upload', $config);
                 $this->upload->do_upload("file_berkas");
                 $upload = $this->upload->data();
@@ -277,7 +401,7 @@ class Datamaster extends CI_Controller{
                 );
 
             $config['upload_path'] = './assets/berkas/berkassantri';
-            $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+            $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
             $this->load->library('upload', $config);
             if ( $this->upload->do_upload("file_berkas"))
             {
@@ -447,7 +571,7 @@ class Datamaster extends CI_Controller{
             $variabel['guru'] = $exec->row_array();
             if ($this->input->post()){
                 $config['upload_path'] = './assets/berkas/berkasguru';
-                $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+                $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
                 $this->load->library('upload', $config);
                 $this->upload->do_upload("file_berkas");
                 $upload = $this->upload->data();
@@ -501,7 +625,7 @@ class Datamaster extends CI_Controller{
                 );
 
             $config['upload_path'] = './assets/berkas/berkasguru';
-            $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+            $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
             $this->load->library('upload', $config);
             if ( $this->upload->do_upload("file_berkas"))
             {
@@ -672,7 +796,7 @@ class Datamaster extends CI_Controller{
             $variabel['staff'] = $exec->row_array();
             if ($this->input->post()){
                 $config['upload_path'] = './assets/berkas/berkasstaff';
-                $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+                $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
                 $this->load->library('upload', $config);
                 $this->upload->do_upload("file_berkas");
                 $upload = $this->upload->data();
@@ -726,7 +850,7 @@ class Datamaster extends CI_Controller{
                 );
 
             $config['upload_path'] = './assets/berkas/berkasstaff';
-            $config['allowed_types'] = 'jpg|png|gif|jpeg|JPG|JPEG|doc|docx|xls|xlsx|ppt|pptx|pdf|DOC|DOCX';
+            $config['allowed_types'] = 'jpg|jpeg|JPG|JPEG|pdf';
             $this->load->library('upload', $config);
             if ( $this->upload->do_upload("file_berkas"))
             {
@@ -768,6 +892,78 @@ class Datamaster extends CI_Controller{
     }
 
     // End CRUD Staff
+
+    // CRUD tahun ajaran
+    function tahunajar()
+    {
+        $variabel['data'] = $this->m_tahun_ajaran->lihatdata();
+        $this->layout->render('back-end/datamaster/tahunajar/v_tahunajar',$variabel,'back-end/datamaster/tahunajar/v_tahunajar_js');
+    }
+
+
+
+    function tahunajartambah()
+    {
+        if ($this->input->post()){
+
+                $array=array(
+
+                    'tahun_ajaran'=> $this->input->post('tahun_ajaran'),
+                    );
+                $exec = $this->m_tahun_ajaran->tambahdata($array);
+                if ($exec) redirect(base_url("admin/datamaster/tahunajartambah?msg=1"));
+                else redirect(base_url("admin/datamaster/tahunajartambah?msg=0"));
+            }
+
+         else {
+            $variabel ='';
+            $this->layout->render('back-end/datamaster/tahunajar/v_tahunajar_tambah',$variabel,'back-end/datamaster/tahunajar/v_tahunajar_js');
+        }
+    }
+
+    function tahunajaredit()
+    {
+        if ($this->input->post()) {
+            $array=array(
+              'id_tahun'=>$this->input->post('id_tahun'),
+              'tahun_ajaran'=> $this->input->post('tahun_ajaran'),
+                );
+            $id_tahunlama = $this->input->post("id_tahunlama");
+            $id_tahun = $this->input->post("id_tahun");
+            if (($this->m_tahun_ajaran->cekdata($id_tahun)>0) && ($id_tahunlama!=$id_tahun)) {
+                $variabel['id_tahun'] =$this->input->post('id_tahun');
+                $variabel['id_tahunlama'] =$this->input->post('id_tahunlama');
+                $variabel['data'] = $array;
+                $this->layout->render('back-end/datamaster/tahunajar/v_tahunajar_edit',$variabel,'back-end/datamaster/tahunajar/v_tahunajar_js');
+            } else {
+                $exec = $this->m_tahun_ajaran->editdata($id_tahunlama,$array);
+                if ($exec){
+                  redirect(base_url("admin/datamaster/tahunajaredit?id_tahun=".$id_tahun."&msg=1"));
+                }
+            }
+      } else {
+            $id_tahun = $this->input->get("id_tahun");
+            $exec = $this->m_tahun_ajaran->lihatdatasatu($id_tahun);
+            if ($exec->num_rows()>0){
+                $variabel['data'] = $exec ->row_array();
+                $this->layout->render('back-end/datamaster/tahunajar/v_tahunajar_edit',$variabel,'back-end/datamaster/tahunajar/v_tahunajar_js');
+            } else {
+                redirect(base_url("admin/datamaster/tahunajar"));
+            }
+      }
+
+    }
+
+    function tahunajarhapus()
+    {
+       $id_tahun = $this->input->get("id_tahun");
+       $exec = $this->m_tahun_ajaran->hapus($id_tahun);
+       redirect(base_url()."admin/datamaster/tahunajar?msg=1");
+    }
+
+    // End CRUD tahunajar
+
+
 
    // CRUD provinsi
    function provinsi()
@@ -842,7 +1038,7 @@ class Datamaster extends CI_Controller{
    }
 
    // End CRUD Provinsi
-  
+
 
 // END Provinsi
 // CRUD Kota dan Kabupaten
@@ -918,23 +1114,28 @@ function kecamatan()
     $this->layout->render('back-end/datamaster/kecamatan/v_kecamatan',$variabel,'back-end/datamaster/kecamatan/v_kecamatan_js');
 }
 
-
+function datakotakab()
+{
+  $id=$this->input->post('id');
+  $data=$this->m_kecamatan->datakota_kab($id);
+  echo json_encode($data);
+}
 
 function kecamatantambah()
 {
     if ($this->input->post()){
 
             $array=array(
-                'id_provinsi'=> $this->input->post('id_provinsi'),
-                'nama_kota_kab'=> $this->input->post('nama_kota_kab'),
+
+                'id_kota_kab'=> $this->input->post('id_kota_kab'),
+                'nama_kecamatan'=> $this->input->post('nama_kecamatan'),
                 );
-            $exec = $this->m_kota_kab->tambahdata($array);
-            if ($exec) redirect(base_url("admin/datamaster/kota_kabtambah?msg=1"));
-            else redirect(base_url("admin/datamaster/kota_kabtambah?msg=0"));
+            $exec = $this->m_kecamatan->tambahdata($array);
+            if ($exec) redirect(base_url("admin/datamaster/kecamatantambah?msg=1"));
+            else redirect(base_url("admin/datamaster/kecamatantambah?msg=0"));
 
     } else {
-
-        $variabel['data'] =   $this->m_kota_kab->dataprovinsi();
+        $variabel['data'] =   $this->m_kecamatan->dataprovinsi();
         $this->layout->render('back-end/datamaster/kecamatan/v_kecamatan_tambah',$variabel,'back-end/datamaster/kecamatan/v_kecamatan_js');
     }
 }
@@ -944,24 +1145,26 @@ function kecamatanedit()
     if ($this->input->post()) {
         $array=array(
           'id_kota_kab'=> $this->input->post('id_kota_kab'),
-          'nama_kota_kab'=> $this->input->post('nama_kota_kab'),
-          'id_provinsi'=> $this->input->post('id_provinsi'),
+          'nama_kecamatan'=> $this->input->post('nama_kecamatan'),
             );
-            $id_kota_kab = $this->input->post("id_kota_kab");
-            $exec = $this->m_kota_kab->editdata($id_kota_kab,$array);
+            $id_kecamatan = $this->input->post("id_kecamatan");
+            $id_provinsi = $this->input->post("id_provinsi");
+            $exec = $this->m_kecamatan->editdata($id_kecamatan,$array);
             if ($exec){
-              redirect(base_url("admin/datamaster/kota_kabedit?id_kota_kab=".$id_kota_kab."&msg=1"));
+              redirect(base_url("admin/datamaster/kecamatanedit?id_kecamatan=".$id_kecamatan."&id_provinsi=".$id_provinsi."&msg=1"));
             }
 
   } else {
-        $id_kota_kab = $this->input->get("id_kota_kab");
-        $exec = $this->m_kota_kab->lihatdatasatu($id_kota_kab);
+      $id_kecamatan = $this->input->get("id_kecamatan");
+      $id_provinsi = $this->input->get("id_provinsi");
+        $exec = $this->m_kecamatan->lihatdatasatu($id_kecamatan);
         if ($exec->num_rows()>0){
             $variabel['data'] = $exec ->row_array();
-            $variabel['dataprovinsi'] = $this->m_kota_kab->dataprovinsi();
-            $this->layout->render('back-end/datamaster/kota_kab/v_kota_kab_edit',$variabel,'back-end/datamaster/kota_kab/v_kota_kab_js');
+            $variabel['dataprovinsi'] = $this->m_kecamatan->dataprovinsi();
+            $variabel['datakotakab']  = $this->m_kecamatan->datakotakab($id_provinsi);
+            $this->layout->render('back-end/datamaster/kecamatan/v_kecamatan_edit',$variabel,'back-end/datamaster/kecamatan/v_kecamatan_js');
         } else {
-            redirect(base_url("admin/datamaster/kota_kab"));
+            redirect(base_url("admin/datamaster/kecamatan"));
         }
   }
 
@@ -969,11 +1172,87 @@ function kecamatanedit()
 
 function kecamatanhapus()
 {
-   $id_kota_kab = $this->input->get("id_kota_kab");
-   $exec = $this->m_kota_kab->hapus($id_kota_kab);
-   redirect(base_url()."admin/datamaster/kota_kab?msg=1");
+   $id_kecamatan = $this->input->get("id_kecamatan");
+   $exec = $this->m_kecamatan->hapus($id_kecamatan);
+   redirect(base_url()."admin/datamaster/kecamatan?msg=1");
 }
   // End CRUD Kecamatan
+
+  // CRUD kel_desa
+  function kel_desa()
+  {
+      $variabel['data'] = $this->m_kel_desa->lihatdata();
+      $this->layout->render('back-end/datamaster/kel_desa/v_kel_desa',$variabel,'back-end/datamaster/kel_desa/v_kel_desa_js');
+  }
+
+  function datakecamatan()
+  {
+    $id=$this->input->post('id');
+    $data=$this->m_kel_desa->datakecamatanajax($id);
+    echo json_encode($data);
+  }
+
+  function kel_desatambah()
+  {
+      if ($this->input->post()){
+
+              $array=array(
+
+                  'id_kecamatan'=> $this->input->post('id_kecamatan'),
+                  'nama_kel_desa'=> $this->input->post('nama_kel_desa'),
+                  );
+              $exec = $this->m_kel_desa->tambahdata($array);
+              if ($exec) redirect(base_url("admin/datamaster/kel_desatambah?msg=1"));
+              else redirect(base_url("admin/datamaster/kel_desatambah?msg=0"));
+
+      } else {
+          $variabel['data'] =   $this->m_kel_desa->dataprovinsi();
+          $this->layout->render('back-end/datamaster/kel_desa/v_kel_desa_tambah',$variabel,'back-end/datamaster/kel_desa/v_kel_desa_js');
+      }
+  }
+
+  function kel_desaedit()
+  {
+      if ($this->input->post()) {
+          $array=array(
+            'id_kecamatan'=> $this->input->post('id_kecamatan'),
+            'nama_kel_desa'=> $this->input->post('nama_kel_desa'),
+              );
+              $id_kel_desa = $this->input->post("id_kel_desa");
+              $id_provinsi = $this->input->post("id_provinsi");
+              $id_kota_kab = $this->input->post("id_kota_kab");
+              $exec = $this->m_kel_desa->editdata($id_kel_desa,$array);
+              if ($exec){
+                redirect(base_url("admin/datamaster/kel_desaedit?id_kel_desa=".$id_kel_desa."&id_provinsi=".$id_provinsi."&id_kota_kab=".$id_kota_kab."&msg=1"));
+              }
+
+    } else {
+        $id_kel_desa  = $this->input->get("id_kel_desa");
+        $id_provinsi = $this->input->get("id_provinsi");
+        $id_kota_kab = $this->input->get("id_kota_kab");
+          $exec = $this->m_kel_desa->lihatdatasatu($id_kel_desa);
+          if ($exec->num_rows()>0){
+              $variabel['data'] = $exec ->row_array();
+              $variabel['dataprovinsi'] = $this->m_kel_desa->dataprovinsi();
+              $variabel['datakotakab']  = $this->m_kel_desa->datakotakab($id_provinsi);
+              $variabel['datakecamatan'] = $this->m_kel_desa->datakecamatan($id_kota_kab);
+              $this->layout->render('back-end/datamaster/kel_desa/v_kel_desa_edit',$variabel,'back-end/datamaster/kel_desa/v_kel_desa_js');
+          } else {
+              redirect(base_url("admin/datamaster/kel_desa"));
+          }
+    }
+
+  }
+
+  function kel_desahapus()
+  {
+     $id_kel_desa = $this->input->get("id_kel_desa");
+     $exec = $this->m_kel_desa->hapus($id_kel_desa);
+     redirect(base_url()."admin/datamaster/kel_desa?msg=1");
+  }
+    // End CRUD Kecamatan
+
+
    // CRUD Pendidikan
    function pendidikan()
    {

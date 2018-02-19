@@ -29,7 +29,7 @@
                   echo "
                     <tr>
                       <td>
-                      <a href='".base_url('admin/datamaster/kecamatanedit?id_kecamatan='.$row['id_kecamatan'].'')."' class='btn btn-warning btn-xs' title='Edit'><i class='fa fa-edit'></i></a>
+                      <a href='".base_url('admin/datamaster/kecamatanedit?id_kecamatan='.$row['id_kecamatan'].'&id_provinsi='.$row['id_provinsi'].'')."' class='btn btn-warning btn-xs' title='Edit'><i class='fa fa-edit'></i></a>
                       <button class='btn btn-danger btn-xs' data-toggle='modal' data-target='#".$row['id_kecamatan']."'><i class='fa fa-trash-o'></i></button>
                       </td>
                       <td>".$row['nama_kecamatan']."</td>

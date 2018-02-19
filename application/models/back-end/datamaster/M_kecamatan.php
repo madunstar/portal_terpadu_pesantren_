@@ -34,6 +34,18 @@ class M_kecamatan extends CI_Model
         return $this->db->get('tb_provinsi');
     }
 
+    function datakota_kab($id)
+    {
+      $hasil=$this->db->query("SELECT * FROM tb_kota_kab WHERE id_provinsi='$id'");
+  		return $hasil->result();
+
+    }
+    function datakotakab($id_provinsi)
+    {
+      $this->db->where("id_provinsi",$id_provinsi);
+      return $this->db->get('tb_kota_kab');
+
+    }
     function cekdata($id_kecamatan)
     {
         $this->db->where("id_kecamatan",$id_kecamatan);

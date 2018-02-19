@@ -22,24 +22,23 @@ Class Login extends CI_Controller{
 			$this->layout->render('back-end/v_login');
 		}else{
 			$data = array('username' => $this->input->post('username', TRUE),
-						  'password' => $this->input->post('password', TRUE));
-			$passenkrip = base64_encode($data['password']);	
+						  'password' => md5($this->input->post('password', TRUE)));
 			$cek = $this->M_login->mloginaksi($data);
 			if ($cek->num_rows() == 1) {
 				foreach ($cek->result() as $sess) {
 					$sess_data['logged_in'] = TRUE; //'Sudah Login'
 					$sess_data['username'] = $sess->username;
-					$sess_data['kode_role'] = $sess->kode_role;
+					$sess_data['kode_role_admin'] = $sess->kode_role_admin;
 					$this->session->set_userdata($sess_data);
 					//return TRUE;
 				}
-				if ($this->session->userdata('kode_role')=='adm_pd') {
+				if ($this->session->userdata('kode_role_admin')=='adm_pd') {
 					redirect('admin/Pendaftaran');
 				}
-				else if ($this->session->userdata('kode_role')=='akd') {
+				else if ($this->session->userdata('kode_role_admin')=='akd') {
 					redirect('admin/Datamaster');
 				}
-				elseif ($this->session->userdata('kode_role')=='keu') {
+				elseif ($this->session->userdata('kode_role_admin')=='keu') {
 					redirect('admin/Pendaftaran');
 				}
 			}

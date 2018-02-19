@@ -113,7 +113,7 @@
                 <small class="text-muted">Tidak Lengkap</small>
               </div>
               <div class="col-xs-6">
-                <div class="h3 font-bold"><?php echo $total_tidak_lengkap['total']; ?></div>
+                <div class="h2 font-bold"><?php echo $total_tidak_lengkap['total']; ?></div>
 
               </div>
             </div>
@@ -178,7 +178,7 @@
                 </div>
                 <div class="col-xs-6">
                   <div class="padder-v text-right">
-                    <button class="btn btn-info">Selengkapnya <span class="fa fa-arrow-circle-right"></span></button>
+                    <button class="btn btn-info btn-block">Selengkapnya <span class="fa fa-arrow-circle-right"></span></button>
                   </div>
                 </div>
               </div>
